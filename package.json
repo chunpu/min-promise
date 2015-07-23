@@ -1,0 +1,14 @@
+{
+  "name": "min-promise",
+  "version": "1.0.1",
+  "description": "Small Promise that realize the Promise standard",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha test"
+  },
+  "author": "chunpu",
+  "license": "ISC",
+  "dependencies": {
+    "min-util": "^1.6.10"
+  }
+}
