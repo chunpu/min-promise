@@ -1,6 +1,6 @@
 {
   "name": "min-promise",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Small Promise that realize the Promise standard",
   "main": "index.js",
   "scripts": {
