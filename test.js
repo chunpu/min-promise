@@ -233,6 +233,16 @@ describe('constructor', function() {
 		}, 10)
 	})
 
+	it('throw in ctor can be caught', function(done) {
+		var p = new Promise(function() {
+			throw 5
+		})
+		p.then(unreach, function(r) {
+			assert(5 === r)
+			done()
+		})
+	})
+
 })
 
 describe('`return value can be passed`', function() {
