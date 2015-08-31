@@ -2,6 +2,8 @@
 // MDN: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Promise
 // v8 https://github.com/v8/v8/blob/f0c9cc0bbfd461c7f516799d9a58e9a7395f737e/src/promise.js
 // Spec: http://www.ecma-international.org/ecma-262/6.0/#sec-promise-objects
+// Promises/A+: https://promisesaplus.com/
+// Yaku: https://github.com/ysmood/yaku/blob/master/docs/minPromiseA+.coffee
 
 var _ = require('min-util')
 
@@ -28,31 +30,75 @@ module.exports = Promise
 // pending => resolve|reject => then => return => pending => then
 
 function Promise(executor) {
-	// 25.4.3.1
-	if (!is.fn(executor)) {
-		throw new TypeError('resolver is not function')
-	}
 	var me = this
 	me[PromiseState] = pending
+	var resolve = set(me, fulfilled)
+	var reject = set(me, rejected)
+	try {
+		executor(resolve, reject)
+	} catch (e) {
+		set(me, rejected, e)
+	}
 	me[PromiseFulfillReactions] = []
 	me[PromiseRejectReactions] = []
+}
+
+var set = _.curry(function(promise, state, result) {
+	// 2.3 [[Resolve]](promise, x)
+	if (promise == result) {
+		// 2.3.1
+		throw new TypeError('circle promise')
+	}
+	if (isThenable(result)) {
+		result.then(function(value) {
+			set(promise, fulfilled, value)
+		}, function(reason) {
+			set(promise, rejected, reason)
+		})
+	} else {
+		// 2.3.4
+		realSet(promise, state, result)
+	}
+})
+
+function realSet(promise, state, result) {
+	promise[PromiseState] = state
+	promise[PromiseResult] = result
+	// TODO trigger handler queue
+	var queue = promise[PromiseFulfillReactions]
+	if (state == rejected) {
+		queue = promise[PromiseRejectReactions]
+	}
+	_.each(queue, function(fn) {
+		fn(result)
+	})
 }
 
 var proto = Promise.prototype
 
 proto.then = function(onFulfilled, onRejected) {
-	// 25.4.5.3
+	// 2.2.1 25.4.5.3
 	var me = this
 	var state = me[PromiseState]
 	if (pending == state) {
 		me[PromiseFulfillReactions].push(onFulfilled)
 		me[PromiseRejectReactions].push(onRejected)
-	} else if (fulfilled == state) {
-		EnqueueJob(onFulfilled, fulfilled)
-	} else if (rejected == state) {
-		EnqueueJob(onRejected, rejected)
+		// TODO return promise2 linked to promise1
+	} else {
+		var fn = onFulfilled
+		if (state == rejected) {
+			fn = onRejected
+		}
+		var ret
+		try {
+			// 2.2.7.1
+			ret = fn(me[PromiseResult])
+		} catch (error) {
+			// 2.2.7.2
+			return Promise.reject(error)
+		}
+		return Promise.resolve(ret)
 	}
-	return new Promise(me)
 }
 
 proto['catch'] = function(onRejected) {
@@ -61,7 +107,7 @@ proto['catch'] = function(onRejected) {
 }
 
 Promise.resolve = function(val) {
-	return new Promise(function(val) {	
+	return new Promise(function(resolve) {	
 		resolve(val)
 	})
 }
