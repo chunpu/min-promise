@@ -1,14 +1,18 @@
 {
   "name": "min-promise",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Small Promise that realize the Promise standard",
   "main": "index.js",
   "scripts": {
-    "test": "mocha test"
+    "test": "node promise-a-test.js",
+	"readme": "pretty-readme > readme.md"
   },
   "author": "chunpu",
   "license": "ISC",
   "dependencies": {
     "min-util": "^1.6.10"
+  },
+  "devDependencies": {
+    "promises-aplus-tests": "latest"
   }
 }

@@ -8,7 +8,7 @@
 var assert = require('assert')
 var _ = require('min-util')
 var is = _.is
-//var Promise = require('./')
+var Promise = require('./')
 
 function unreach() {
 	assert(false, 'will not reach here')
