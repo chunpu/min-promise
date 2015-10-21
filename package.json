@@ -1,10 +1,10 @@
 {
   "name": "min-promise",
-  "version": "1.0.3",
+  "version": "2.1.0",
   "description": "Small Promise that realize the Promise standard",
   "main": "index.js",
   "scripts": {
-    "test": "node promise-a-test.js",
+    "test": "node test/promise-a-test",
 	"readme": "pretty-readme > readme.md"
   },
   "author": "chunpu",

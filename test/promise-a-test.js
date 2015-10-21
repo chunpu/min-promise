@@ -1,6 +1,8 @@
-var adapter = require('./adapter')
+var adapter = require('../src/adapter')
 var tests = require('promises-aplus-tests')
 
 tests(adapter, function(err) {
-	console.log(err)
+	if (err) {
+		console.error(err)
+	}
 })
