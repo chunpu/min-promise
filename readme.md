@@ -13,7 +13,7 @@ min-promise
 [david-url]: https://david-dm.org/chunpu/min-promise
 
 
-Small Promise that realize the Promise standard
+Small and Clean Promise 100% compliant with Promises/A+ Spec
 
 Installation
 ---
@@ -22,7 +22,9 @@ Installation
 npm i min-promise
 ```
 
-Small and Clean Promise 100% compliant with [Promises/A+ Spec](https://promisesaplus.com/)
+100% compliant with [Promises/A+ Spec](https://promisesaplus.com/)
+
+Check all tests in [promises-aplus-tests](https://github.com/promises-aplus/promises-tests)
 
 License
 ---
