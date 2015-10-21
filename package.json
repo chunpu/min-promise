@@ -1,8 +1,8 @@
 {
   "name": "min-promise",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "Small Promise that realize the Promise standard",
-  "main": "index.js",
+  "main": "src/index.js",
   "scripts": {
     "test": "node test/promise-a-test",
 	"readme": "pretty-readme > readme.md"
