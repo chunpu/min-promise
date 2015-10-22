@@ -1,6 +1,6 @@
 {
   "name": "min-promise",
-  "version": "2.1.2",
+  "version": "2.1.3",
   "description": "Small and Clean Promise 100% compliant with Promises/A+ Spec",
   "main": "src/index.js",
   "scripts": {

@@ -37,7 +37,8 @@ Promise.prototype.then = function(onFulfilled, onRejected) {
 	} else {
 		triggerHandler(ret, me.state, me.result)
 	}
-	return ret // 2.2.7
+	// 2.2.7
+	return ret
 }
 
 var setResult = _.curry(function(promise, state, result) {
@@ -48,16 +49,19 @@ var setResult = _.curry(function(promise, state, result) {
 	}
 	if (promise.state != pending) return // careful, only pending can be set result
 
-	// 2.3.2 2.3.3 treat promise just like thenable
+	// 2.3.2 2.3.3 treat promise just like thenable(object or function)
 	var then
-	try {
-		// 2.3.3.1 carefull, get then can crash
-		then = getThenFn(result)
-	} catch (e) {
-		// 2.3.3.2
-		return finalSetResult(promise, rejected, e)
+	if (is.oof(result)) {
+		try {
+			// 2.3.3.1
+			then = result.then
+		} catch (err) {
+			// 2.3.3.2
+			return finalSetResult(promise, rejected, err)
+		}
 	}
-	if (then) { // 2.3.3.3
+	if (is.fn(then)) {
+		// 2.3.3.3
 		var onceSet = _.once(function(state, result) {
 			// 2.3.3.3.3 2.3.3.3.4.1
 			if (state == rejected) {
@@ -101,7 +105,8 @@ function triggerHandler(promise, state, result) {
 	// carefull, should always async
 	_.delay(function() {
 		var handler = promise.handlers[state]
-		if (is.fn(handler)) { // 2.2.1, 2.2.2, 2.2.3
+		if (is.fn(handler)) {
+			// 2.2.1, 2.2.2, 2.2.3
 			var value
 			try {
 				value = handler(result) // 2.2.5
@@ -116,14 +121,3 @@ function triggerHandler(promise, state, result) {
 		}
 	})
 }
-
-function getThenFn(obj) {
-	// 2.3.3 Otherwise, if x is an object or function
-	if (is.oof(obj)) {
-		var fn = obj.then // `.then` may be getter
-		if (is.fn(fn)) {
-			return fn
-		}
-	}
-}
-
