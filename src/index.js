@@ -20,7 +20,12 @@ function Promise(executor) {
 	var reject = setResult(me, rejected)
 
 	try {
-		executor(resolve, reject)
+		// avoid resolve() with curry..
+		executor(function(value) {
+			resolve(value)
+		}, function(reason) {
+			reject(reason)
+		})
 	} catch (error) {
 		reject(error)
 	}
@@ -103,7 +108,7 @@ function finalSetResult(promise, state, result) {
 
 function triggerHandler(promise, state, result) {
 	// carefull, should always async
-	_.delay(function() {
+	nextTick(function() {
 		var handler = promise.handlers[state]
 		if (is.fn(handler)) {
 			// 2.2.1, 2.2.2, 2.2.3
@@ -120,4 +125,12 @@ function triggerHandler(promise, state, result) {
 			setResult(promise, state, result)
 		}
 	})
+}
+
+function nextTick(fn) {
+	if (global.process && process.nextTick) {
+		process.nextTick(fn)
+	} else {
+		setTimeout(fn)
+	}
 }
