@@ -1,6 +1,6 @@
 {
   "name": "min-promise",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "Small and Clean Promise 100% compliant with Promises/A+ Spec",
   "main": "src/index.js",
   "scripts": {
@@ -10,7 +10,7 @@
   "author": "chunpu",
   "license": "ISC",
   "dependencies": {
-    "min-util": "^1.6.10"
+    "min-util": "latest"
   },
   "devDependencies": {
     "promises-aplus-tests": "latest"
