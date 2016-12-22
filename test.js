@@ -1,5 +1,5 @@
 var Promise = require('./src')
-setTimeout(function(){console.log(4)},0);
+setTimeout(function(){console.log(4)},0)
 
 new Promise(function(resolve){
     console.log(1)
@@ -9,5 +9,8 @@ new Promise(function(resolve){
     console.log(2)
 }).then(function(){
     console.log(5)
-});
-console.log(3);
+	throw 6
+}).caught(function(err) {
+	console.log('catch', err)
+})
+console.log(3)
