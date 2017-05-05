@@ -1,9 +1,3 @@
-var resolved = require('./resolved')
-var rejected = require('./rejected')
-var deferred = require('./deferred')
-
-var adapter = module.exports = {
-	resolved: resolved,
-	rejected: rejected,
-	deferred: deferred
-}
+exports.resolved = require('./resolved')
+exports.rejected = require('./rejected')
+exports.deferred = require('./deferred')

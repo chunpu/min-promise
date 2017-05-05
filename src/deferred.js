@@ -1,4 +1,4 @@
-var Promise = require('./')
+var Promise = require('./promise')
 
 module.exports = function() {
 	var ret = {}

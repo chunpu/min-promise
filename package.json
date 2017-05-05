@@ -1,16 +1,20 @@
 {
   "name": "min-promise",
-  "version": "3.0.0",
+  "version": "4.1.0",
   "description": "Small and Clean Promise 100% compliant with Promises/A+ Spec",
   "main": "src/index.js",
   "scripts": {
     "test": "node test/promise-a-test",
-	"readme": "pretty-readme > readme.md"
+    "readme": "pretty-readme > readme.md",
+    "dev": "NODE_ENV=development webpack --progress --colors --watch",
+    "build": "webpack"
   },
   "author": "chunpu",
   "license": "ISC",
   "dependencies": {
-    "min-util": "latest"
+    "html-webpack-plugin": "^2.28.0",
+    "min-util": "latest",
+    "webpack": "^2.5.0"
   },
   "devDependencies": {
     "promises-aplus-tests": "latest"
