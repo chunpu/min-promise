@@ -10,7 +10,7 @@ var rejected = -1
 
 module.exports = Promise
 
-// constructor
+// constructor, es5 promise
 function Promise(executor) {
 	var me = this
 	me.handlers = {}
