@@ -5,12 +5,12 @@ var HtmlWebpackPlugin = require('html-webpack-plugin')
 var version = pkg.version
 
 var config = {
-	output: {
-		path: path.resolve(__dirname, 'dist'),
-		filename: 'build.js'
-	},
+  output: {
+    path: path.resolve(__dirname, 'dist'),
+    filename: 'build.js'
+  },
     entry: {
-       	example: './test.js'
+         example: './test.js'
     },
     plugins: [
         new HtmlWebpackPlugin({
