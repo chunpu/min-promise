@@ -9,17 +9,37 @@ Promise.prototype['catch'] = Promise.prototype.caught = function(onRejected) {
 	return this.then(null, onRejected)
 }
 
+// delay tool function
+Promise.prototype.delay = function(ms) {
+	var val
+	return this.then(function(value) {
+		val = value
+		return Promise.delay(ms)
+	}).then(function() {
+		return val
+	})
+}
+
+Promise.delay = function(ms) {
+	return new Promise(function(resolve) {
+		setTimeout(resolve, ms)
+	})
+}
+
 Promise.all = function(promises) {
 	var values = []
 	var size = _.size(promises)
 	var count = 0
 	return new Promise(function(resolve, reject) {
+		if (size === 0) {
+			resolve(values)
+		}
 		_.each(promises, function(promise, i) {
 			Promise.resolve(promise).then(function(val) {
 				values[i] = val
 				count++
 				if (count === size) {
-					reject(values)
+					resolve(values)
 				}
 			}, function(reason) {
 				reject(reason)

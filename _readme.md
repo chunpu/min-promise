@@ -9,6 +9,27 @@ Feature
 
 Support `.caught` like `.catch` for ES3 support, inspired by [bluebird](https://github.com/petkaantonov/bluebird)
 
-- `new Promise()`
-- `Promise.all()`
-- `Promise.race()`
+- `new Promise()` in ES2015
+- `Promise.all()` in ES2015
+- `Promise.race()` in ES2015
+
+Deferred
+---
+
+jQuery style or `CommonJS Promises/A` Deferred object
+
+> Promise is subset of Deferred
+
+```js
+var Deferred = require('min-promise/deferred')
+var deferred = Deferred()
+
+```
+
+Tool function
+---
+
+`setTimeout` in promise style
+
+- `Promise.delay(ms)`
+- `.delay(ms)`

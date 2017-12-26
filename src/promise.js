@@ -16,9 +16,12 @@ function Promise(executor) {
 	me.handlers = {}
 	me.children = []
 	me.state = pending
-	var resolve = setResult(me, fulfilled)
-	var reject = setResult(me, rejected)
-
+	me.spread = false // spread result
+	var resolve = currySetResult(me, fulfilled)
+	var reject = curryFinalSetResult(me, rejected)
+	if (!is.fn(executor)) {
+		throw new TypeError('expecting a function')
+	}
 	try {
 		// avoid resolve() with curry..
 		executor(function(value) {
@@ -34,6 +37,7 @@ function Promise(executor) {
 Promise.prototype.then = function(onFulfilled, onRejected) {
 	var me = this
 	var ret = new Promise(_.noop)
+	ret.spread = this.spread // will inherit spread
 	var handlers = ret.handlers
 	handlers[fulfilled] = onFulfilled
 	handlers[rejected] = onRejected
@@ -46,13 +50,12 @@ Promise.prototype.then = function(onFulfilled, onRejected) {
 	return ret
 }
 
-var setResult = _.curry(function(promise, state, result) {
+var setResult = function(promise, state, result) {
 	// [[Resolve]](promise, y) => setResult(promise, resolved, y)
 	if (promise === result) {
 		// 2.3.1
 		return setResult(promise, rejected, new TypeError('circle promise'))
 	}
-	if (promise.state != pending) return // careful, only pending can be set result
 
 	// 2.3.2 2.3.3 treat promise just like thenable(object or function)
 	var then
@@ -66,6 +69,7 @@ var setResult = _.curry(function(promise, state, result) {
 		}
 	}
 	if (is.fn(then)) {
+		// result is thenable
 		// 2.3.3.3
 		var onceSet = _.once(function(state, result) {
 			// 2.3.3.3.3 2.3.3.3.4.1
@@ -94,10 +98,15 @@ var setResult = _.curry(function(promise, state, result) {
 		// 2.3.3.4 2.3.4
 		finalSetResult(promise, state, result)
 	}
-})
+}
 
-function finalSetResult(promise, state, result) {
+var currySetResult = _.curry(setResult)
+
+var finalSetResult = function(promise, state, result) {
 	// directly set result, ignore if result is thenable
+	if (promise.state != pending) {
+		return // careful, only pending can be set result
+	}
 	promise.state = state
 	promise.result = result
 	_.each(promise.children, function(child) {
@@ -105,6 +114,8 @@ function finalSetResult(promise, state, result) {
 		triggerHandler(child, state, result)
 	})
 }
+
+var curryFinalSetResult = _.curry(finalSetResult)
 
 function triggerHandler(promise, state, result) {
 	// carefull, should always async
@@ -114,7 +125,11 @@ function triggerHandler(promise, state, result) {
 			// 2.2.1, 2.2.2, 2.2.3
 			var value
 			try {
-				value = handler(result) // 2.2.5
+				if (promise.spread) {
+					value = handler.apply(null, result)
+				} else {
+					value = handler(result) // 2.2.5
+				}
 			} catch (reason) {
 				// 2.2.7.2 use final because reason should never be promise
 				return finalSetResult(promise, rejected, reason)

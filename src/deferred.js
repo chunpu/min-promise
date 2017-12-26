@@ -1,3 +1,4 @@
+// promise/A+ test
 var Promise = require('./promise')
 
 module.exports = function() {

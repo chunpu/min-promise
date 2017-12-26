@@ -23,10 +23,11 @@ var config = {
         loaders: [
         ]
     },
-    devtool: 'source-map'
+    devtool: '#cheap-module-eval-source-map'
 }
 
 if ('development' != process.env.NODE_ENV) {
+    config.devtool = 'cheap-module-source-map'
     config.output.filename = ['[name]', '[hash]'].join('_') + '.js'
 }
 

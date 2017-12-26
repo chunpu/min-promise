@@ -8,7 +8,8 @@
 var assert = require('assert')
 var _ = require('min-util')
 var is = _.is
-var Promise = require('./')
+var Promise = require('../')
+var $ = require('../jquery')
 
 function unreach() {
 	assert(false, 'will not reach here')
@@ -502,4 +503,162 @@ describe('nested promise wrapper', function() {
 		}, unreach)
 	})
 
+})
+
+describe('delay tool', function() {
+	it('support Promise.delay and .delay', function() {
+		var start = _.now()
+		var ms = 50
+		return Promise.delay(ms).then(function() {
+		    assert(_.now() - start > ms)
+		    return 'value'
+		}).delay(ms).then(function(val) {
+		    assert(val === 'value')
+		    assert(_.now() - start > ms * 2)
+		})
+	})
+})
+
+describe('Promise.all', function() {
+
+	it('support empty', function() {
+		return Promise.all([]).then(function(values) {
+			assert.deepEqual(values, [])
+		}, unreach)
+	})
+
+	it('support basic', function() {
+		var p1 = Promise.resolve(3)
+		var p2 = 1337
+		var p3 = new Promise(function(resolve, reject) {
+		    setTimeout(resolve, 100, 'foo')
+		})
+
+		return Promise.all([p1, p2, p3]).then(function(values) { 
+		    assert.deepEqual(values, [3, 1337, 'foo'])
+		}, unreach)
+	})
+
+	it('reject immediately', function() {
+		var ms = 20
+		var p1 = Promise.delay(ms).then(function() {
+			return 'p1'
+		})
+		var p2 = Promise.delay(ms * 2).then(function() {
+			return Promise.reject('p2')
+		})
+		var p3 = Promise.delay(ms * 3).then(function() {
+			return 'p3'
+		})
+		return Promise.all([p1, p2, p3]).then(unreach, function(reason) {
+			assert.deepEqual(reason, 'p2')
+		})
+	})
+})
+
+describe('Promise.race', function() {
+
+	it('support empty', function(done) {
+		Promise.race([]).then(unreach, unreach)
+		Promise.delay(50).then(done) // will pending forever
+	})
+
+	it('support basic', function() {
+		var p1 = new Promise(function(resolve, reject) {
+		    setTimeout(resolve, 100, 1)
+		})
+		var p2 = 1337
+		var p3 = new Promise(function(resolve, reject) {
+		    setTimeout(resolve, 100, 'foo')
+		})
+
+		return Promise.race([p1, p2, p3]).then(function(value) { 
+		    assert.deepEqual(value, 1337)
+		}, unreach)
+	})
+
+	it('reject immediately', function() {
+		var ms = 20
+		var p1 = Promise.delay(ms).then(function() {
+			return 'p1'
+		})
+		var p2 = Promise.delay(ms * 2).then(function() {
+			return Promise.reject('p2')
+		})
+		var p3 = Promise.delay(ms * 3).then(function() {
+			return 'p3'
+		})
+		return Promise.race([p1, p2, p3]).then(function(value) {
+			assert.deepEqual(value, 'p1')
+		}, unreach)
+	})
+})
+
+describe('jQuery style', function() {
+
+	it('$.Deferred done', function(done) {
+		var dfd = $.Deferred()
+		dfd.done(function(v1, v2) {
+			assert.deepEqual(v1, 1)
+			assert.deepEqual(v2, 2)
+			done()
+		})
+		Promise.delay(50).then(function() {
+			dfd.resolve(1, 2)
+		})
+	})
+
+	it('$.Deferred done', function(done) {
+		var dfd = $.Deferred()
+		dfd.fail(function(v1, v2) {
+			assert.deepEqual(v1, 1)
+			assert.deepEqual(v2, 2)
+			done()
+		})
+		Promise.delay(50).then(function() {
+			dfd.reject(1, 2)
+		})
+	})
+
+	it('$.when', function(done) {
+		// https://api.jquery.com/jquery.when/
+		var d1 = $.Deferred()
+		var d2 = $.Deferred()
+		var d3 = $.Deferred()
+		$.when(d1, d2, d3).done(function(v1, v2, v3) {
+			assert.deepEqual([v1, v2, v3], [undefined, 'abc', 123])
+			done()
+		})
+		d1.resolve()
+		d2.resolve('abc')
+		d3.resolve(123)
+	})
+
+	it('$.when 2', function(done) {
+		// https://api.jquery.com/jquery.when/
+		var d1 = $.Deferred()
+		$.when(d1).done(function(v1) {
+			assert.deepEqual(v1, [1, 2, 3])
+			done()
+		})
+		d1.resolve([1, 2, 3])
+	})
+
+	it('$.when single array', function(done) {
+		// https://api.jquery.com/jquery.when/
+		var d1 = $.Deferred()
+		$.when(d1).done(function(v1) {
+			assert.deepEqual(v1, [1, 2, 3])
+			done()
+		})
+		d1.resolve([1, 2, 3])
+	})
+
+	it('$.when empty', function(done) {
+		// https://api.jquery.com/jquery.when/
+		$.when().done(function(v1) {
+			// assert.deepEqual(v1, undefined)
+			done()
+		})
+	})
 })
