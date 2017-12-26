@@ -1,3 +1,4 @@
+/* eslint-disable */
 var Promise = window.Promise = require('./src')
 var assert = require('assert')
 var $ = require('./jquery')

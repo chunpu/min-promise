@@ -1,6 +1,5 @@
 var path = require('path')
 var pkg = require('./package.json')
-var webpack = require('webpack')
 var HtmlWebpackPlugin = require('html-webpack-plugin')
 var version = pkg.version
 
@@ -26,7 +25,7 @@ var config = {
     devtool: '#cheap-module-eval-source-map'
 }
 
-if ('development' != process.env.NODE_ENV) {
+if (process.env.NODE_ENV !== 'development') {
     config.devtool = 'cheap-module-source-map'
     config.output.filename = ['[name]', '[hash]'].join('_') + '.js'
 }
