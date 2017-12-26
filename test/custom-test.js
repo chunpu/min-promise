@@ -608,7 +608,7 @@ describe('jQuery style', function() {
     })
   })
 
-  it('$.Deferred done', function(done) {
+  it('$.Deferred fail', function(done) {
     var dfd = $.Deferred()
     dfd.fail(function(v1, v2) {
       assert.deepEqual(v1, 1)
