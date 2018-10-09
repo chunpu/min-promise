@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Promise</title>
+    <script src="https://lib.baomitu.com/echarts/4.2.0-rc.1/echarts.min.js"></script>
+    <style>
+    * {
+      margin: 0;
+      padding: 0;
+    }
+    </style>
+  </head>
+  <body>
+    <div id="main" style="width: 100vw;height: 100vh"></div>
+
+
+    <script>
+// promise 开枝散叶, 传宗接代
+// 没有做的是单次限制, 以及类型判断等
+
+function nextTick(func) {
+  setTimeout(func)
+}
+
+class Promise {
+  constructor (executor) {
+    this.value = undefined
+    this.status = 'pending'
+    this.children = []
+    executor(value => {
+      this.setStatus('resolved', value)
+    }, reason => {
+      this.setStatus('rejected', reason)
+    })
+  }
+
+  then (onResolved, onRejected) {
+    var child = new Promise(() => {})
+    this.children.push(child)
+    child.parent = this
+    Promise.onChange()
+    Object.assign(child, {
+      onResolved: onResolved || (value => value),
+      onRejected: onRejected || (reason => Promise.reject(reason))
+    })
+    if (this.status !== 'pending') {
+      child.triggerHandler(this.status, this.value)
+    }
+    return child
+  }
+
+  catch (onRejected) {
+    return this.then(null, onRejected)
+  }
+
+  triggerHandler (status, parentValue) {
+    // private
+    nextTick(() => {
+      var handler
+      if (status === 'resolved') {
+        handler = this.onResolved
+      } else if (status === 'rejected') {
+        handler = this.onRejected
+      }
+      this.setStatus('resolved', handler(parentValue))
+    })
+  }
+
+  setStatus (status, value) {
+    // private
+    if (value && value.then) {
+      value.then(realValue => {
+        this.setStatus('resolved', realValue)
+      }, reason => {
+        this.setStatus('rejected', reason)
+      })
+    } else {
+      this.status = status
+      this.value = value
+      Promise.onChange()
+      this.children.forEach(child => {
+        child.triggerHandler(status, value)
+      })
+    }
+  }
+
+  static resolve (value) {
+    return new Promise(resolve => {
+      resolve(value)
+    })
+  }
+
+  static reject (reason) {
+    return new Promise((resolve, reject) => {
+      reject(reason)
+    })
+  }
+
+  static all () { /* TODO */ }
+
+  static race () { /* TODO */ }
+
+  static onChange () { /* 调试用 */ }
+}
+    </script>
+
+    <script>
+window.root = new Promise((resolve, reject) => {
+  reject(`I'm Groot`)
+})
+var myChart = echarts.init(document.getElementById('main'))
+var count = 0
+function sample(arr) {
+  return arr[Math.floor(Math.random() * arr.length)]
+}
+Promise.prototype.getDepth = function() {
+  var depth = 0
+  var curr = this
+  while (curr.parent) {
+    depth++
+    curr = curr.parent
+  }
+  return depth
+}
+Promise.prototype.monkey = function() {
+  // 猴子乱生孩子
+  count++
+  var handler = () => {
+    return new Promise((...args) => {
+      setTimeout(() => {
+        var func = sample(args)
+        var depth = this.getDepth() + 1
+        sample(args)(`depth - ${depth}`)
+      }, Math.random() * 1000 * 4)
+    })
+  }
+  var repeat = sample([1, 2])
+  for (var i = 0; i < repeat; i++) {
+    var newPromise = this.then(handler, handler)
+    if (newPromise.getDepth() < 5) {
+      setTimeout(() => {
+        newPromise.monkey()
+      }, Math.random() * 1000 * 4)
+    }
+  }
+  return newPromise
+}
+Promise.prototype.format = function() {
+  return {
+    value: this.value,
+    status: this.status,
+    children: this.children.map(child => child.format())
+  }
+}
+Promise.onChange = function() {
+  var data = root.format()
+  var style = {
+    padding: 15,
+    color: '#fff',
+    fontSize: 14
+  }
+  var option = {
+    backgroundColor: '#02246d',
+    series: [{
+      type: 'tree',
+      animationDuration: 0,
+      animationDurationUpdate: 500,
+      initialTreeDepth: -1,
+      "symbolSize": 1,
+      "symbol": "rect",
+      "expandAndCollapse": false,
+      data: [data],
+      label: {
+        normal: {
+          formatter: function(data) {
+            return `{${data.data.status}|${String(data.data.value)}}`
+          },
+          rich: {
+            resolved: Object.assign({
+              backgroundColor: '#67C23A'
+            }, style),
+            rejected: Object.assign({
+              backgroundColor: '#F56C6C'
+            }, style),
+            pending: Object.assign({
+              backgroundColor: '#E6A23C'
+            }, style)
+          }
+        }
+      }
+    }]
+  }
+  myChart.setOption(option)
+}
+
+root.monkey()
+    </script>
+  </body>
+</html>
